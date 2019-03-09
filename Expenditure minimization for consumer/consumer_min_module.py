@@ -3,6 +3,8 @@ import numpy as np
 from scipy import optimize
 import matplotlib.pyplot as plt
 from math import isclose
+from ipywidgets import interact, interactive, fixed, interact_manual
+import ipywidgets as widgets
 
 class consumer_min:
     
@@ -31,13 +33,13 @@ class consumer_min:
             
     def __str__(self): # called when printed
         
-        lines = f'alpha = {self.alpha:.3f}\n'
-        lines += f'price vector = (p1,p2) = ({self.p1:.3f},{self.p2:.3f})\n'
-        lines += f'utility = u = {self.u:.3f}\n'
+        lines = f'Alpha = {self.alpha:.3f}\n'
+        lines += f'Price vector = (p1,p2) = ({self.p1:.3f},{self.p2:.3f})\n'
+        lines += f'Utility = u = {self.u:.3f}\n'
         
         # add lines on solution if it has been calculated
         if not (np.isnan(self.x1) or np.isnan(self.x2)):
-            lines += 'solution:\n'
+            lines += 'Solution:\n'
             lines += f' x1 = {self.x1:.2f}\n'
             lines += f' x2 = {self.x2:.2f}\n'
         if not np.isnan(self.e):
@@ -46,7 +48,7 @@ class consumer_min:
         # add error term if x2_max is to small to find optimal solution
         # isclose-function is used to find small discrepancies 
         if isclose(self.x2, self.x2_max ) or isclose(self.x1, self.x2_max) or self.u < self.u_func(self.x1,self.x2):
-            lines += f"Error, optimal solution not found, axis length is to small"
+            lines += f"Error: optimal solution possible not found, axis length is to small"
    
         return lines
 
@@ -121,9 +123,9 @@ class consumer_min:
         for i,x2 in enumerate(x2_vec):
             def objective(x1):
                 return self.u_func(x1,x2)-u
-            sol = optimize.root(objective, 0)
+            sol = optimize.root(objective, 0.1)
             x1_vec[i] = sol.x[0]
-        
+    
         # d.plot
         ax.plot(x1_vec,x2_vec,label=f'$u = {u:.2f}$')
         ax.fill_between(x1_vec,x2_vec,self.x2_max, color="firebrick",lw=2,alpha=0.5)
@@ -140,3 +142,29 @@ class consumer_min:
         ax.grid(ls='--',lw=1)
         ax.legend(loc='upper right')
 
+# function that executes all of the class functions
+def solve_and_plot(u,alpha, p1 , x2_max):
+    # defines consumer
+    hans = consumer_min(alpha = alpha, p1 = p1, p2 = 1, x2_max=x2_max, u = u)
+    # solves the problem using module:
+    hans.solve()
+    # creates figure:
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    
+    #plots the solution using module
+    hans.plot_budgetlines(ax)
+    hans.plot_indifference_curves(ax)
+    hans.plot_solution(ax)
+    hans.plot_details(ax)
+    
+    #prints detail
+    print(hans)
+
+#Plots an interactive version of the solve_and_plot
+def make_interactive():
+    return interact(solve_and_plot, u=widgets.IntSlider(min=1,max=20,step=1,value=10), \
+         alpha=widgets.FloatSlider(description = "$\\alpha$", min=0.05,max=0.96,step=0.05,value=0.3),\
+         p1 =widgets.FloatSlider(description = "$\\frac{p_1}{p_2}$" ,min=0.1,max=10,step=0.1, value=2), \
+         x2_max=widgets.IntSlider(description = "Axis length", min=5,max=40,step=5,value=25))
+# widget.FLoatSlider and .IntSlider defines starting values and intervals for floats and ints, so it dosen't crash for for examlpe u=0
