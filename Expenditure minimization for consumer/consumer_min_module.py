@@ -57,11 +57,11 @@ class consumer_min:
     # utilty function
     def u_func(self,x1,x2):
         return x1**self.alpha*x2**(1-self.alpha)
+
     # expense function
     def expense(self,x1,x2):
         return x1*self.p1+x2*self.p2
 
-    
     # solve problem
     def solve(self):
         
@@ -87,6 +87,7 @@ class consumer_min:
     
     # find and plot budgetlines
     def plot_budgetlines(self,ax):
+
         # allocate memory
         self.x1_buds = []
         self.x2_buds = []
@@ -95,7 +96,7 @@ class consumer_min:
         for fac in [0.75,1,1.25]:
             e = fac * self.expense(self.x1,self.x2)
             x = [0,e/self.p1] # x-cordinates in triangle
-            y = [e/self.p2,0] #y-coordiates in traingle
+            y = [e/self.p2,0] # y-coordiates in traingle
             self.x1_buds.append(x)
             self.x2_buds.append(y)
             self.es.append(e)
@@ -119,7 +120,7 @@ class consumer_min:
         x1_vec = np.empty(self.N)
         x2_vec = np.linspace(1e-8,self.x2_max,self.N)
         
-        #find plots
+        # find plots
         for i,x2 in enumerate(x2_vec):
             def objective(x1):
                 return self.u_func(x1,x2)-u
@@ -143,28 +144,24 @@ class consumer_min:
         ax.legend(loc='upper right')
 
 # function that executes all of the class functions
-def solve_and_plot(u,alpha, p1 , x2_max):
+def solve_and_plot(u,alpha,p1,x2_max,do_print=False):
+
     # defines consumer
-    hans = consumer_min(alpha = alpha, p1 = p1, p2 = 1, x2_max=x2_max, u = u)
+    hans = consumer_min(alpha=alpha,p1=p1,p2=1,x2_max=x2_max,u=u)
+    
     # solves the problem using module:
     hans.solve()
+    
     # creates figure:
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     
-    #plots the solution using module
+    # plots the solution using module
     hans.plot_budgetlines(ax)
     hans.plot_indifference_curves(ax)
     hans.plot_solution(ax)
     hans.plot_details(ax)
     
     #prints detail
-    print(hans)
-
-#Plots an interactive version of the solve_and_plot
-def make_interactive():
-    return interact(solve_and_plot, u=widgets.IntSlider(min=1,max=20,step=1,value=10), \
-         alpha=widgets.FloatSlider(description = "$\\alpha$", min=0.05,max=0.96,step=0.05,value=0.3),\
-         p1 =widgets.FloatSlider(description = "$\\frac{p_1}{p_2}$" ,min=0.1,max=10,step=0.1, value=2), \
-         x2_max=widgets.IntSlider(description = "Axis length", min=5,max=40,step=5,value=25))
-# widget.FLoatSlider and .IntSlider defines starting values and intervals for floats and ints, so it dosen't crash for for examlpe u=0
+    if do_print:
+        print(hans)
